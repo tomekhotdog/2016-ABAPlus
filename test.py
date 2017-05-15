@@ -1120,7 +1120,7 @@ class TestASPARTIXInterface(unittest.TestCase):
 
         ideal_ext = asp.calculate_ideal_extensions("test_calculate_extensions6.lp")
         self.assertEqual(ideal_ext, {frozenset([b,c])})
-
+T
 
 
 

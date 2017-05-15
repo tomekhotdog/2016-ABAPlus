@@ -19,6 +19,8 @@ import json
 
 from abap_parser import *
 from aspartix_interface import *
+from baba import BABAProgramParser as Parser
+from baba import Semantics
 
 SOLVER_INPUT = "input_for_solver.lp"
 TURNSTILE = "&#x22a2;"
@@ -46,6 +48,7 @@ HIGHLIGHTED = 3
 #maps session keys to calculation results
 results = {}
 
+
 class IndexView(generic.ListView):
     template_name = 'aba_plus_django/index.html'
 
@@ -68,6 +71,7 @@ class IndexView(generic.ListView):
 
         return HttpResponseRedirect(reverse('aba_plus_django:results'))
 
+
 class ResultsView(generic.ListView):
     template_name = 'aba_plus_django/results.html'
     context_object_name = 'input'
@@ -79,6 +83,17 @@ class ResultsView(generic.ListView):
         context = super(generic.ListView, self).get_context_data(**kwargs)
 
         if self.request.session['to_compute']:
+
+            ###################################################################
+            baba = Parser.BABAProgramParser(string=self.request.session['input']).parse()
+
+            g_probabilities, s_probabilities, i_probabilities = Semantics.compute_semantic_probabilities(baba)
+
+            context['g_probabilities'] = g_probabilities
+            context['s_probabilities'] = s_probabilities
+            context['i_probabilities'] = i_probabilities
+
+            ###################################################################
 
             rules_added = None
             res = generate_aba_plus_framework(self.request.session['input'])
@@ -105,7 +120,7 @@ class ResultsView(generic.ListView):
             grounded_ext = asp.calculate_grounded_arguments_extensions(SOLVER_INPUT)
             complete_ext = asp.calculate_complete_arguments_extensions(SOLVER_INPUT)
             preferred_ext = asp.calculate_preferred_arguments_extensions(SOLVER_INPUT)
-            ideal_ext = asp.calculate_ideal_arguments_extensions(SOLVER_INPUT)
+            ideal_ext = {} #asp.calculate_ideal_arguments_extensions(SOLVER_INPUT)
 
             context['stable'] = arguments_extensions_to_str_list(stable_ext, contr_map)
             context['grounded'] = arguments_extensions_to_str_list(grounded_ext, contr_map)

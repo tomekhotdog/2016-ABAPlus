@@ -63,8 +63,8 @@ limitations under the License.-->
 </script>
 <script>
 
-var width = 700,
-height = 600;
+var width = 500,
+height = 450;
 
 var color = d3.scale.category20();
 
@@ -132,8 +132,24 @@ Visualisation of the input ABA&#8314; framework as an assumption graph
             </td>
             {% endif %}
     </tr>
-    {% endautoescape %}
 </table>
+
+Semantic Probability
+<table class="ext">
+    <th colspan="2">Grounded Probability:</th>
+    <th colspan="2">Sceptically Preferred Probability:</th>
+    <th colspan="2">Ideal Probability:</th>
+    <tr>
+        <td>{% for symbol, _ in g_probabilities %} {{symbol}} <br/> {% endfor %}</td>
+        <td>{% for _, probability in g_probabilities %} {{probability}} <br/> {% endfor %}</td>
+        <td>{% for symbol, _ in s_probabilities %} {{symbol}} <br/> {% endfor %}</td>
+        <td>{% for _, probability in s_probabilities %} {{probability}} <br/> {% endfor %}</td>
+        <td>{% for symbol, _ in i_probabilities %} {{symbol}} <br/> {% endfor %}</td>
+        <td>{% for _, probability in i_probabilities %} {{probability}} <br/> {% endfor %}</td>
+    </tr>
+
+</table>
+{% endautoescape %}
 
 
 <script>
