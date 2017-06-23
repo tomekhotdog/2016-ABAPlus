@@ -384,34 +384,6 @@ def compute_semantic_probability(semantics, baba):
     return language_probability
 
 
-# Returns a dictionary of {symbol : semantic probability}
-def compute_semantic_probability(semantics, baba):
-    language_probability = {}
-    for sentence in baba.language:
-        language_probability[sentence.symbol] = 0.0
-
-    worlds = Utils.generate_worlds(baba.random_variables)
-    for world in worlds:
-        baba.set_random_variable_world(world)
-
-        if semantics == GROUNDED:
-            semantic_sets = grounded(baba)
-        elif semantics == SCEPTICALLY_PREFERRED:
-            semantic_sets = sceptically_preferred(baba)
-        elif semantics == IDEAL:
-            semantic_sets = ideal(baba)
-        else:
-            raise InvalidSemanticsException("Invalid semantics chosen: " + str(semantics))
-
-        world_probability = baba.BN.p_world(world)
-
-        for sentence in baba.language:
-            if any(derivable(baba, sentence, a_set.elements + baba.rv_world) for a_set in semantic_sets):
-                language_probability[sentence.symbol] += world_probability
-
-    return language_probability
-
-
 # Returns a tuple of the semantic probabilities for a BABA
 # (probabilities given as lists of (sentence, probability) string tuple
 def compute_semantic_probabilities(baba):
@@ -429,20 +401,3 @@ def compute_semantic_probabilities(baba):
     ideal_tuples = sorted(ideal_tuples, key=lambda item: item[0])
 
     return grounded_tuples, s_preferred_tuples, ideal_tuples
-
-############################################################
-
-# The following methods check the given list of assumptions
-# for membership in the corresponding semantics
-
-# def verify_preferred(baba, assumptions):
-#
-# def verify_sceptically_preferred(baba, assumptions):
-#
-# def verify_complete(baba, assumptions):
-#
-# def verify_grounded(baba, assumptions):
-#
-# def verify_ideal(baba, assumptions):
-#
-# def verify_stable(baba, assumptions):

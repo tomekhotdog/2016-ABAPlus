@@ -57,7 +57,7 @@ def generate_worlds(random_variables):
 
         possible_world = [pos, neg]
         if len(worlds) == 0:
-            worlds = possible_world
+            worlds = [[pos], [neg]]
             continue
 
         worlds = list(itertools.product(worlds, possible_world))
@@ -69,3 +69,12 @@ def generate_worlds(random_variables):
 def flatten(items):
     return [elem for item in items for elem in flatten(item)] \
         if isinstance(items, collections.Iterable) else [items]
+
+
+# Creates a list of strings representing a list of (SemanticSet, derivation set) tuples
+def extensions_and_derivations_to_str_list(extension_derivation_tuples):
+    string_list = []
+    for extension, derivation in extension_derivation_tuples:
+        string_list.append('{' + ', '.join([s.symbol for s in extension.elements]) + '}' + " |- " +
+                           '{' + ', '.join([s.symbol for s in derivation]) + '}')
+    return string_list

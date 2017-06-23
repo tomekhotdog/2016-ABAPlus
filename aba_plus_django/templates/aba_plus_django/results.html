@@ -18,7 +18,7 @@ limitations under the License.-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="{% static "assets/css/results.css" %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/results.css' %}" />
     <style>
 
     .link {
@@ -45,7 +45,7 @@ limitations under the License.-->
 <body>
 <header id="header">
     <a href="." class="logo">
-        <span class="symbol"><img src="{% static "images/logo.svg" %}" alt="" /></span><span class="title">ABA&#8314;</span>
+        <span class="symbol"><img src="{% static 'images/logo.svg' %}" alt="" /></span><span class="title">ABA&#8314;</span>
     </a>
 </header>
 
@@ -64,7 +64,7 @@ limitations under the License.-->
 <script>
 
 var width = 500,
-height = 450;
+height = 500;
 
 var color = d3.scale.category20();
 
@@ -74,27 +74,19 @@ var radius = d3.scale.sqrt()
 attack_type_names = {1: "dashed arrow: normal attack", 2: "dotted arrow: reverse attack", 3: "solid arrow: both normal and reverse attacks"}
 </script>
 {% autoescape off %}
-Input ABA&#8314; framework
-<table width="100%">
+<table width="90%">
+    <th>Input ABA&#8314; framework</th>
     <tr>
-        <td>
-            <textarea name="input_text" form="form1" style="height:500px; width:100%; border:solid 1px gray; resize:none; overflow-y: scroll;" >{{input_text}} </textarea>
+        <td style="padding-top: 32px">
+            <textarea name="input_text" form="form1" style="height:300px; width:100%; border:solid 1px gray; resize:none; overflow-y: scroll;" >{{input_text}} </textarea>
             <br/>
             <form method="post" id="form1">
                 {% csrf_token %}
                 <input type="submit" name="submit_text" value="Load" />
             </form>
         </td>
-        <td style="vertical-align:top; padding-left:20px">
-            {% if rules_added %}
-                Rules added to satisfy WCP: <br/>
-                {{ rules_added}}
-            {% else %}
-                {{ WCP }}
-            {% endif %} <br/> <br/>
-        </td>
     </tr>
-</table> <br/>
+</table>
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -106,17 +98,6 @@ Input ABA&#8314; framework
 
 Visualisation of the input ABA&#8314; framework as an assumption graph
 <table>
-
-    <tr>
-        <td id="cell1">
-        </td>
-
-        {% if render_graph2 %}
-        <td id="cell2">
-        </td>
-        {% endif %}
-    </tr>
-
     <tr>
             <td>
                 {% if highlighted_extension %}
@@ -134,21 +115,72 @@ Visualisation of the input ABA&#8314; framework as an assumption graph
     </tr>
 </table>
 
-Semantic Probability
-<table class="ext">
-    <th colspan="2">Grounded Probability:</th>
-    <th colspan="2">Sceptically Preferred Probability:</th>
-    <th colspan="2">Ideal Probability:</th>
-    <tr>
-        <td>{% for symbol, _ in g_probabilities %} {{symbol}} <br/> {% endfor %}</td>
-        <td>{% for _, probability in g_probabilities %} {{probability}} <br/> {% endfor %}</td>
-        <td>{% for symbol, _ in s_probabilities %} {{symbol}} <br/> {% endfor %}</td>
-        <td>{% for _, probability in s_probabilities %} {{probability}} <br/> {% endfor %}</td>
-        <td>{% for symbol, _ in i_probabilities %} {{symbol}} <br/> {% endfor %}</td>
-        <td>{% for _, probability in i_probabilities %} {{probability}} <br/> {% endfor %}</td>
-    </tr>
+<div style="width=100%;">
+    <div style="width=50%;float:left">
+        <table>
+            <th>Visualisation</th>
+            <tr>
+                <td>
+                    <tr>
+                        <td id="cell1"></td>
+                            {% if render_graph2 %}
+                        <td id="cell2"></td>
+                        {% endif %}
+                    </tr>
+            </tr>
+        </table>
+    </div>
+    <div style="width=40%;float:right;margin-right:10%">
+        {% if random_variables %}
+        <p4><b>Random Variables</b></p4>
+        <div class="baba_worlds">
+            <table>
+            <td>
+                <form action="" method="post">
+                    <td>
+                        {% csrf_token %}
+                        {{ baba_worlds_formset.management_form }}
+                        {% for baba_world_form in baba_worlds_formset %}
+                            <tr>
+                                <td style="width:40px"><p3>{{ baba_world_form.data.world_label }}</p3></td>
+                                <td>{{ baba_world_form.select }}</td>
+                            </tr>
+                        {% endfor %}
+                    </td>
+                    <br>
+                    <td colspan="2"><input type="submit" value="Set world" name="set_world" style="width:150px;">
+                    </td>
+                </form>
+            </td>
+        </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
 
+<br/>
+<div style="float:left;">
+    Semantic Probability
+    <table>
+    <td>
+        <table class="ext">
+            <th colspan="2">Grounded Probability:</th>
+            <th colspan="2">Sceptically Preferred Probability:</th>
+            <th colspan="2">Ideal Probability:</th>
+            <tr>
+                <td>{% for symbol, _ in g_probabilities %} {{symbol}} <br/> {% endfor %}</td>
+                <td>{% for _, probability in g_probabilities %} {{probability}} <br/> {% endfor %}</td>
+                <td>{% for symbol, _ in s_probabilities %} {{symbol}} <br/> {% endfor %}</td>
+                <td>{% for _, probability in s_probabilities %} {{probability}} <br/> {% endfor %}</td>
+                <td>{% for symbol, _ in i_probabilities %} {{symbol}} <br/> {% endfor %}</td>
+                <td>{% for _, probability in i_probabilities %} {{probability}} <br/> {% endfor %}</td>
+            </tr>
+        </table>
+    </td>
 </table>
+</div>
+
+
 {% endautoescape %}
 
 
@@ -439,11 +471,10 @@ if (render_graph2) {
 </script>
 
 
-
-<br/>
-    {% autoescape off %}
+<div style="float:left">
+        {% autoescape off %}
     Extensions (in the form Set of Accepted Assumptions &#x22a2; Set of derivable sentences ) <br/><br/>
-    
+
     <table class="ext">
         <tr>
             <th>Stable extensions:</th>
@@ -453,11 +484,11 @@ if (render_graph2) {
             <th>Ideal extensions:</th>
         </tr>
         <tr>
-            <td>{% for ext in stable %} {{ext}} <br/> {% endfor %}</td>
-            <td>{% for ext in grounded %} {{ext}} <br/> {% endfor %}</td>
-            <td>{% for ext in complete %} {{ext}} <br/> {% endfor %}</td>
-            <td>{% for ext in preferred %} {{ext}} <br/> {% endfor %}</td>
-            <td>{% for ext in ideal %} {{ext}} <br/> {% endfor %}</td>
+            <td>{% for ext in stable_sets %} {{ext}} <br/> {% endfor %}</td>
+            <td>{% for ext in grounded_sets %} {{ext}} <br/> {% endfor %}</td>
+            <td>{% for ext in complete_sets %} {{ext}} <br/> {% endfor %}</td>
+            <td>{% for ext in preferred_sets %} {{ext}} <br/> {% endfor %}</td>
+            <td>{% for ext in ideal_sets %} {{ext}} <br/> {% endfor %}</td>
         </tr>
     </table>
 
@@ -598,6 +629,9 @@ if (render_graph2) {
             </td>
         </tr>
     </table>
+
+</div>
+<br/>
 
 
 

@@ -1,5 +1,12 @@
 @import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,700,900");
 
+div.baba_worlds {
+    padding: 0px 20px 20px 10px;
+    height: 500px;
+    overflow: auto;
+}
+
+
 body, input, select, textarea {
 		color: #585858;
 		font-family: "Source Sans Pro", Helvetica, sans-serif;
@@ -138,6 +145,10 @@ a {
 			font-size: 0.8em;
 		}
 
+	}
+
+	.world_selection {
+	    padding-right: 100px;
 	}
 
 /* Header */

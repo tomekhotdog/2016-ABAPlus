@@ -15,12 +15,14 @@ limitations under the License."""
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
+from django.forms import formset_factory
 import json
 
+from .forms.forms import BabaWorldForm, BabaWorldsForm
 from abap_parser import *
 from aspartix_interface import *
 from baba import BABAProgramParser as Parser
-from baba import Semantics
+from baba import Semantics, SemanticsUtils, babaUtilities
 
 SOLVER_INPUT = "input_for_solver.lp"
 TURNSTILE = "&#x22a2;"
@@ -85,23 +87,80 @@ class ResultsView(generic.ListView):
         if self.request.session['to_compute']:
 
             ###################################################################
+            # BABA support
+
             baba = Parser.BABAProgramParser(string=self.request.session['input']).parse()
 
             g_probabilities, s_probabilities, i_probabilities = Semantics.compute_semantic_probabilities(baba)
-
             context['g_probabilities'] = g_probabilities
             context['s_probabilities'] = s_probabilities
             context['i_probabilities'] = i_probabilities
 
+            random_variables = [rv.symbol for rv in baba.random_variables]
+            context['random_variables'] = random_variables
+
+            baba_worlds_formset = formset_factory(BabaWorldForm, extra=0)
+
+            random_variable_world = []
+            if 'world_definition' in self.request.session:
+                world_definition = self.request.session['world_definition']
+
+                random_variable_elements = list([rv for rv in baba.random_variables])
+                rv_world = [elem['select'] == '0' for elem in world_definition]
+                for i in range(len(rv_world)):
+                    rv = random_variable_elements[i]
+                    rv.negation = not rv_world[i]
+                    random_variable_world.append(rv)
+
+            else:
+                world_definition = [{'select': 0} for _ in range(len(random_variables))]
+
+            baba_worlds_formset = baba_worlds_formset(initial=world_definition)
+            context['baba_worlds_formset'] = baba_worlds_formset
+
+            for index, form in enumerate(baba_worlds_formset):
+                form.data['world_label'] = random_variables[index]
+
+            baba.set_random_variable_world(random_variable_world)
+            framework_extension = babaUtilities.compute_framework_extension(random_variable_world)
+
+            admissibles = Semantics.generate_admissible(baba)
+            stable_extensions = Semantics.stable(baba, admissibles)
+            grounded_extensions = Semantics.grounded(baba, admissibles)
+            complete_extensions = Semantics.complete(baba, admissibles)
+            preferred_extensions = Semantics.preferred(baba, admissibles)
+            ideal_extensions = Semantics.ideal(baba, admissibles)
+
+            stable_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in stable_extensions]
+            grounded_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in grounded_extensions]
+            complete_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in complete_extensions]
+            preferred_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in preferred_extensions]
+            ideal_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in ideal_extensions]
+
+            stable_sets = SemanticsUtils.extensions_and_derivations_to_str_list(stable_derivable)
+            grounded_sets = SemanticsUtils.extensions_and_derivations_to_str_list(grounded_derivable)
+            complete_sets = SemanticsUtils.extensions_and_derivations_to_str_list(complete_derivable)
+            preferred_sets = SemanticsUtils.extensions_and_derivations_to_str_list(preferred_derivable)
+            ideal_sets = SemanticsUtils.extensions_and_derivations_to_str_list(ideal_derivable)
+
+            context['stable_sets'] = stable_sets
+            context['grounded_sets'] = grounded_sets
+            context['complete_sets'] = complete_sets
+            context['preferred_sets'] = preferred_sets
+            context['ideal_sets'] = ideal_sets
+
             ###################################################################
 
             rules_added = None
-            res = generate_aba_plus_framework(self.request.session['input'])
+            framework_input = self.request.session['input']
+            framework_to_parse = framework_input + framework_extension
+            res = generate_aba_plus_framework(framework_to_parse)
+
             abap = res[0]
             #reverse dictionary to map sentences to contraries
             contr_map = dict((v, k) for k, v in res[1].items())
             if self.request.session['auto_WCP']:
-                rules_added = rules_to_str(abap.check_or_auto_WCP(auto_WCP = True), contr_map)
+                rules_added = rules_to_str(abap.check_or_auto_WCP(auto_WCP=True), contr_map)
                 context['rules_added'] = rules_added
             else:
                 abap.check_or_auto_WCP()
@@ -161,7 +220,16 @@ class ResultsView(generic.ListView):
                                                          'stable_ext': stable_ext,
                                                          'grounded_ext': grounded_ext, 'complete_ext': complete_ext,
                                                          'ideal_ext': ideal_ext, 'preferred_ext': preferred_ext,
-                                                         'rules_added': rules_added}
+                                                         'rules_added': rules_added,
+                                                         'g_probabilities': g_probabilities,
+                                                         's_probabilities': s_probabilities,
+                                                         'i_probabilities': i_probabilities,
+                                                         'random_variables': random_variables,
+                                                         'world_definition': world_definition,
+                                                         'baba_worlds_formset': baba_worlds_formset,
+                                                         'stable_sets': stable_sets, 'grounded_sets': grounded_sets,
+                                                         'complete_sets': complete_sets, 'preferred_sets': preferred_sets,
+                                                         'ideal_sets': ideal_sets}
 
         else:
             result = results[self.request.session.session_key]
@@ -173,14 +241,29 @@ class ResultsView(generic.ListView):
 
             contr_map = result['contr_map']
 
+            ###################################################################
+            # BABA support
+
             context['stable'] = arguments_extensions_to_str_list(result['stable_ext'], contr_map)
             context['grounded'] = arguments_extensions_to_str_list(result['grounded_ext'], contr_map)
             context['complete'] = arguments_extensions_to_str_list(result['complete_ext'], contr_map)
             context['preferred'] = arguments_extensions_to_str_list(result['preferred_ext'], contr_map)
             context['ideal'] = arguments_extensions_to_str_list(result['ideal_ext'], contr_map)
 
+            context['g_probabilities'] = result['g_probabilities']
+            context['s_probabilities'] = result['s_probabilities']
+            context['i_probabilities'] = result['i_probabilities']
+
+            context['random_variables'] = result['random_variables']
+
+            baba_worlds_formset = formset_factory(BabaWorldForm, extra=0)
+            baba_worlds_formset = baba_worlds_formset(initial=result['world_definition'])
+            context['baba_worlds_formset'] = baba_worlds_formset
+
+            ###################################################################
+
             highlighted_ext = None
-            if  self.request.session['highlight_index']:
+            if self.request.session['highlight_index']:
                 extension_map = result['extension_map']
                 to_highlight = self.request.session['highlight_index']
                 highlighted_ext = extension_map[to_highlight][0]
@@ -211,6 +294,17 @@ class ResultsView(generic.ListView):
         return context
 
     def post(self, request, **kwargs):
+
+        if "set_world" in request.POST:
+            baba_worlds_formset = formset_factory(BabaWorldForm)
+            baba_worlds_formset = baba_worlds_formset(request.POST)
+            if baba_worlds_formset.is_valid():
+                request.session['world_definition'] = baba_worlds_formset.cleaned_data
+                request.session['to_compute'] = True
+        else:
+            if 'world_definition' in request.session:
+                del request.session['world_definition']
+
         if "submit_text" in request.POST:
             request.session['input'] = request.POST['input_text']
 

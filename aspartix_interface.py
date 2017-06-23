@@ -40,7 +40,7 @@ DLV_ANSWER = "Best model:"
 CLINGO_REGEX = r"in\((\d+)\)"
 DLV_IDEAL_REGEX = r"ideal\((\d+)\)"
 
-ADMISSIBLE_FILE = "adm.dl"
+ADMISSIBLE_FIE = "adm.dl"
 STABLE_FILE= "stable.dl"
 IDEAL_FILE = "ideal.dl"
 COMPLETE_FILE = "comp.dl"

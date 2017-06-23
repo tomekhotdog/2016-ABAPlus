@@ -4,6 +4,7 @@ import re
 
 FILENAME = 'filename'
 STRING = 'string'
+NEGATION_CHAR = '~'
 
 ######################################################
 # BABA framework definition syntax
@@ -111,9 +112,9 @@ class ProgramParseException(Exception):
 
 decimal_number_regex = '\d*\.?\d*'
 assumption_regex = '\s*myAsm\([\w]+\)\.\s*$'
-rule_regex = '\s*myRule\(\s*[\w]+\s*,\s*\[([\w]|,|\s*)+\]\)\.\s*$'
+rule_regex = '\s*myRule\(\s*[\w]+\s*,\s*\[([\w]|,|\s*|~)+\]\)\.\s*$'
 contrary_regex = '\s*contrary\(\s*[\w]+\s*,\s*[\w]+\s*\)\.\s*$'
-random_variable_regex = '\s*myRV\(\s*[\w]+\s*,\s*' + decimal_number_regex + '\s*\)\.\s*'
+random_variable_regex = '\s*myRV\(\s*~?\s*[\w]+\s*,\s*' + decimal_number_regex + '\s*\)\.\s*'
 conditional_rv_regex = '\s*myRV\(\s*[\w]+\s*,\s*\[.*\]\s*,\s*\[.*\]\s*\)\.\s*$'
 
 
@@ -160,9 +161,15 @@ def extract_rule(rule, random_variables):
     head = Semantics.Sentence(extracted[0].strip())
     body = []
     for elem in extract_from_square_brackets(extracted[1].strip()).split(','):
+        if len(elem) == 0:
+            continue
+
         rv = Semantics.Sentence(elem.strip(), random_variable=True)
+        is_negation = elem.strip().startswith(NEGATION_CHAR)
+        if is_negation:
+            rv = Semantics.Sentence(elem.strip()[1:], random_variable=True)
         if rv in random_variables:
-            body.append(rv)
+            body.append(Semantics.Sentence(rv.symbol, random_variable=True, negation=is_negation))
         else:
             body.append(Semantics.Sentence(elem.strip()))
 
@@ -184,9 +191,15 @@ def extract_random_variable(random_variable):
         raise ProgramParseException("Provided random variable does not match required format")
 
     extracted = extract_from_parentheses(random_variable).split(',')
-    rv = Semantics.Sentence(extracted[0].strip(), random_variable=True)
+    is_negation = extracted[0].strip().startswith(NEGATION_CHAR)
     probability = float(extracted[1].strip())
-    return rv, probability
+    if is_negation:
+        rv = Semantics.Sentence(extracted[0].strip()[1:], random_variable=True, negation=True)
+        return rv, (1 - probability)
+
+    else:
+        rv = Semantics.Sentence(extracted[0].strip(), random_variable=True)
+        return rv, probability
 
 
 def extract_conditional_random_variable(text):
