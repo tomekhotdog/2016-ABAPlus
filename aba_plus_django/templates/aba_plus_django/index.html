@@ -65,35 +65,24 @@ limitations under the License.-->
 					<div id="main">
 						<div class="inner">
 							<header>
-								<h1>Assumption-Based Argumentation with Preferences. </h1>
+								<h1>Bayesian Assumption-Based Argumentation. </h1>
 								<p>
-								    This website (www-abaplus.doc.ic.ac.uk) 
-								    carries the interface of <b>ABAplus</b>, a system that implements reasoning with the computational argumentation formalism ABA&#8314;
-									    <a href="http://www.aaai.org/ocs/index.php/KR/KR16/paper/view/12877/12519">
-									    (K. &#x10c;yras, F. Toni &#8211; ABA&#8314;: Assumption-Based Argumentation with Preferences</a>,  
-									<em>The 15th International Conference on Principles of Knowledge Representation and Reasoning</em> (KR 2016)).
-									ABA&#8314; is a novel approach to handling preferences in structured argumentation.
-									It extends the well established structured argumentation formalism Assumption-Based Argumentation (ABA) 
-								     with a binary preference relation over assumptions.
-									The preferences are incorporated directly into the attack relation to reverse attacks.
-								<br/><br/>
-									On this website, the users can specify the individual components of an ABA&#8314; framework 
-									(i.e. rules, assumptions with their contraries, and preferences among assumptions). 
-									The system then visualizes the ABA&#8314; framework, computes extensions (under various semantics) and their conclusions, 
-									at the same time allowing for a comparison between extensions. 
+                                    This website extends ABAplus, an application for visualising ABA frameworks, with support for random variables in the context of BABA
+                                    (Bayesian Asssumption Based Argumentation). Users can define the individual components of BABA frameworks, and the system visualises
+                                    the results the resulting framework. Users can select among <em>worlds</em> by defining the truth values of random variables, and
+                                    visualise the resulting extensions.
 							    <ul>
-							    In ABAplus, an ABA&#8314; framework is specified as follows: 
+							    In ABAplus, a BABA&#8314; framework is specified as follows:
 								    <li> <b>myAsm(a).</b> specifies that <b>a</b> is an assumption; </li>
 									<li> <b>contrary(a</b>, <b>x).</b> specifies that <b>x</b> is the contrary of assumption <b>a</b>; </li>
-							        <li> <b>myRule(h</b>, <b>[b<sub>1</sub></b>,…,<b>b<sub>n</sub>]).</b> specifies that <b>h <- b<sub>1</sub></b>,…,<b>b<sub>n</sub></b> is a rule;</li>									
-									<li> <b>myPrefLT(b</b>, <b> a).</b> specifies that assumption <b>a</b> is strictly preferred over assumption <b>b</b>; </li>
-									<li> <b>myPrefLE(b</b>, <b> a).</b> specifies that assumption <b>a</b> is strictly or equally preferred over assumption <b>b</b>.</li>
+									<li> <b>myRV(c).</b> specifies that <b>c</b> is a random variable; </li>
+							        <li> <b>myRule(h</b>, <b>[b<sub>1</sub></b>,…,<b>b<sub>n</sub>]).</b> specifies that <b>h <- b<sub>1</sub></b>,…,<b>b<sub>n</sub></b> is a rule;</li>
 								</ul>
 								</p>
 							</header>
 
                             <br/><br/>
-							Either choose a file (with extension .pl) contaning the specification of an ABA&#8314; framework and <b>UPLOAD</b> <br/><br/>
+							Either choose a file (with extension .pl) containing the specification of an ABA&#8314; framework and <b>UPLOAD</b> <br/><br/>
 
 							<form method="post" enctype="multipart/form-data">
 								{% csrf_token %}
@@ -120,7 +109,7 @@ limitations under the License.-->
 									<a href="http://www.doc.ic.ac.uk/~ft/"> Francesca Toni (ft@ic.ac.uk)</a>. 
 								The implementation has been carried out by Ziyi Bao (ziyi.bao14@ic.ac.uk), 
 								under the Undergraduate Research Opportunities Programme (UROP, http://www.imperial.ac.uk/urop), 
-								supervised by K. &#x10c;yras and F. Toni.
+								supervised by K. &#x10c;yras and F. Toni. Support for bayesian assumption based argumentation implemented by Tomasz Szymaniec.
 							</p>
 
 						</div>

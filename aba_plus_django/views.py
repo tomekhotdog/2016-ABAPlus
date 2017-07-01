@@ -108,8 +108,8 @@ class ResultsView(generic.ListView):
                 random_variable_elements = list([rv for rv in baba.random_variables])
                 rv_world = [elem['select'] == '0' for elem in world_definition]
                 for i in range(len(rv_world)):
-                    rv = random_variable_elements[i]
-                    rv.negation = not rv_world[i]
+                    rv = random_variable_elements[i - 1]
+                    rv.negation = not rv_world[i - 1]
                     random_variable_world.append(rv)
 
             else:
@@ -131,11 +131,11 @@ class ResultsView(generic.ListView):
             preferred_extensions = Semantics.preferred(baba, admissibles)
             ideal_extensions = Semantics.ideal(baba, admissibles)
 
-            stable_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in stable_extensions]
-            grounded_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in grounded_extensions]
-            complete_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in complete_extensions]
-            preferred_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in preferred_extensions]
-            ideal_derivable = [(s, Semantics.derivable_set(baba, s.elements)) for s in ideal_extensions]
+            stable_derivable = [(s, Semantics.derivable_set(baba, list(s.elements))) for s in stable_extensions]
+            grounded_derivable = [(s, Semantics.derivable_set(baba, list(s.elements))) for s in grounded_extensions]
+            complete_derivable = [(s, Semantics.derivable_set(baba, list(s.elements))) for s in complete_extensions]
+            preferred_derivable = [(s, Semantics.derivable_set(baba, list(s.elements))) for s in preferred_extensions]
+            ideal_derivable = [(s, Semantics.derivable_set(baba, list(s.elements))) for s in ideal_extensions]
 
             stable_sets = SemanticsUtils.extensions_and_derivations_to_str_list(stable_derivable)
             grounded_sets = SemanticsUtils.extensions_and_derivations_to_str_list(grounded_derivable)
